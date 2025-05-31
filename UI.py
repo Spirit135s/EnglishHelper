@@ -1,5 +1,6 @@
 from openai import OpenAI
 import gradio as gr
+import json
 
 # 请替换成你的OpenAI API Key
 client = OpenAI(api_key="sk-c4d67b703ba447ed9bd593d71562103c", base_url="https://api.deepseek.com")
@@ -19,7 +20,12 @@ def chatbot(query, history):
         model="deepseek-chat",
         messages=messages
     )
-    answer = response.choices[0].message.content
+    response_json=json.loads(response.choices[0].message.content)  # Ensure the response is in JSON format
+    answer = response_json["Reply"] # Extract the reply from the response
+    error = response_json["Error"]  # Extract the error list from the response
+    for err in error:
+        print(f"问题分类: {err['problem']}, 问题说明: {err['explain']}, 修改建议: {err['suggestion']}")
+    end = response_json["End"]  # Extract the end flag from the response
     return answer  # Only return the answer, not the history
 
 gr.ChatInterface(chatbot, title="AI对话助手", description="请输入你的问题，与AI对话吧！").launch()
