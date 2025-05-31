@@ -9,8 +9,8 @@ client = OpenAI(api_key="sk-c4d67b703ba447ed9bd593d71562103c", base_url="https:/
 topic="any"
 history=[]
 
-def chatbot(query):
-    messages = [{"role":"system", "content": """
+prompt_chat = {
+    "role":"system", "content": """
     你叫做Alex,是一位英文学习助手，用CET4级英语和用户进行对话，每次回复不超过4句话，不多于60个单词。回答分为两部分，一部分进行对话，一部分指出用户的错误。
     你在给出回复要求如下：
     1.用包含Reply键值对，Error数组和布尔键值对End的json文件返回你的回答。 
@@ -30,7 +30,21 @@ def chatbot(query):
         ],
         "End": false
     }
-    """}]
+    """
+}
+
+prompt_conclusion = {
+    "role":"system", 
+    "content" : """
+    你叫做Alex,是一位英文学习助手，用CET4级英语和用户进行对话。基于以上的对话内容，对和用户的对话过程进行评价，大约在100个单词左右。
+    你在给出评价要求如下：
+    1.用包含Assess键值对和Vocabulary数组的json文件返回你的回答。 
+    2.Assess键对应一条字符串，输出你给出的评价。 
+    3.在Vocabulary数组，基于整个对话的长度，输出4-20个所有你推荐的值得用户学习掌握的单词，其中不包含单词缩写。每个单词对象要求包含“eng”，“chn”两个键值对，分别对应原英文单词和对应的中文释义"""
+}
+
+def chatbot(query):
+    messages = [prompt_chat]
     for q, a in history:
         messages.append({"role": "user", "content": q})
         messages.append({"role": "assistant", "content": a})
@@ -53,6 +67,28 @@ def chatbot(query):
     history.append((query,answer))
     return answer,ENDTAG  
 
+def concludebot():
+    messages = [prompt_conclusion]
+    for q, a in history:
+        messages.append({"role": "user", "content": q})
+        messages.append({"role": "assistant", "content": a})
+    messages.append({"role": "user", "content": query})
+
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=messages,
+        response_format={
+            'type': 'json_object'
+        }
+    )
+    response_json=json.loads(response.choices[0].message.content)  # Ensure the response is in JSON format
+    assess = response_json["Assess"]  # Extract the assessment from the response
+    vocabulary = response_json["Vocabulary"]  # Extract the vocabulary list from the response
+    for word in vocabulary:
+        print(f"单词: {word['eng']}, 释义: {word['chn']}")
+    return assess
+
+
 if __name__ == "__main__":
     while True:
         query = input("You: ")
@@ -60,4 +96,4 @@ if __name__ == "__main__":
         print(answer)
         if ENDTAG:
             break
-  
+print(concludebot())
