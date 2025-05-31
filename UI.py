@@ -22,4 +22,4 @@ def chatbot(query, history):
     answer = response.choices[0].message.content
     return answer  # Only return the answer, not the history
 
-gr.ChatInterface(chatbot, title="AI对话助手", description="请输入你的问题，与AI对话吧！").launch()
+gr.ChatInterface(chatbot, title="和Alex练习对话", description="请随意想一个话题，使用英文开始对话吧").launch()
