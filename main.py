@@ -1,5 +1,6 @@
 from openai import OpenAI
 import json
+import sys
 
 # 请替换成你的OpenAI API Key
 client = OpenAI(api_key="sk-c4d67b703ba447ed9bd593d71562103c", base_url="https://api.deepseek.com")
@@ -109,12 +110,63 @@ def concludebot():
         print(f"单词: {word['eng']}, 释义: {word['chn']}")
     return assess
 
+def translatebot(query):
+    messages = [{"role": "system", "content": """
+                你是一位翻译助手，负责将用户输入的英文句子翻译成中文。
+                你的回答要求如下：
+                1.用包含Reply键值对和Vocabulary的链表的json文件返回你的回答。
+                2.Reply键直接对应一条字符串，输出你给出的翻译结果。
+                3.尽可能的使用CET4级别的语句去翻译用户的句子。
+                4.Vocabulary数组，基于用户输入的句子，输出4-20个所有你推荐的值得用户学习掌握的单词，其中不包含单词缩写。每个单词对象要求包含“eng”，“chn”两个键值对，分别对应原英文单词和对应的中文释义。
+                EXAMPLE JSON OUTPUT:
+                {
+                    "Reply": "这很有意思",
+                    "Vocabulary:" [
+                        {
+                            "eng": "interesting",
+                            "chn": "有趣的"
+                        },
+                        {
+                            "eng": "fun",
+                            "chn": "有趣"
+                        }
+                    ]
+                }
+                """},
+                {"role": "user", "content": query}]
+
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=messages,
+        response_format={
+            'type': 'json_object'
+        }
+    )
+    response_json=json.loads(response.choices[0].message.content)  # Ensure the response is in JSON format
+    translation = response_json["Reply"]  # Extract the translation from the response
+    vocabulary = response_json["Vocabulary"]  # Extract the vocabulary list from the response
+    return translation,vocabulary
+
 
 if __name__ == "__main__":
-    while True:
+    print("""
+        Welcome to the English Helper!\n
+        Please choose an option as argument:\n
+        1. Translate English to Chinese\n
+        2. Chat with the English Helper\n
+        """)
+    if len(sys.argv) > 1 and sys.argv[1] == "1":
         query = input("You: ")
-        answer,ENDTAG=chatbot(query=query)
-        print(answer)
-        if ENDTAG:
-            break
-print(concludebot())
+        translation,vocabulary = translatebot(query=query)
+        print(f"Translation: {translation}")
+        for word in vocabulary:
+            print(f"Word: {word['eng']}, Meaning: {word['chn']}")
+    if len(sys.argv) > 1 and sys.argv[1] == "2":
+        while True:
+            query = input("You: ")
+            answer,ENDTAG=chatbot(query=query)
+            print(answer)
+            if ENDTAG:
+                break
+        print(concludebot())
+sys.exit(0)
