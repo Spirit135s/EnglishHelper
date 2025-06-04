@@ -1,0 +1,42 @@
+[
+    {
+        "english": "apple",
+        "chinese": "苹果"
+    },
+    {
+        "english": "book",
+        "chinese": "书"
+    },
+    {
+        "english": "cat",
+        "chinese": "猫"
+    },
+    {
+        "english": "dog",
+        "chinese": "狗"
+    },
+    {
+        "english": "water",
+        "chinese": "水"
+    },
+    {
+        "english": "sun",
+        "chinese": "太阳"
+    },
+    {
+        "english": "tree",
+        "chinese": "树"
+    },
+    {
+        "english": "car",
+        "chinese": "汽车"
+    },
+    {
+        "english": "house",
+        "chinese": "房子"
+    },
+    {
+        "english": "flower",
+        "chinese": "花"
+    }
+]

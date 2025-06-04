@@ -11,7 +11,8 @@ topic="any"
 history=[]
 
 prompt_chat = {
-    "role":"system", "content": """
+    "role":"system", 
+    "content": """
     你叫做Alex，今年19岁，是一位英文学习助手，用CET4级英语和用户进行对话，每次回复不超过4句话，不多于60个单词。回答分为两部分，一部分进行对话，一部分指出用户的错误。
     你在给出回复要求如下：
     1.用包含Reply键值对，Error数组和布尔键值对End的json文件返回你的回答。 
@@ -33,7 +34,6 @@ prompt_chat = {
     }
     """
 }
-
 prompt_conclusion = {
     "role":"system", 
     "content" : """
@@ -61,7 +61,61 @@ prompt_conclusion = {
             }
         ]
     }
-"""
+    """
+}
+prompt_translate = {
+    "role": "system", 
+    "content": """
+    你是一位翻译助手，负责将用户输入的英文句子翻译成中文。
+    你的回答要求如下：
+    1.用包含Reply键值对和Vocabulary的链表的json文件返回你的回答。
+    2.Reply键直接对应一条字符串，输出你给出的翻译结果。
+    3.尽可能的使用CET4级别的语句去翻译用户的句子。
+    4.Vocabulary数组，基于用户输入的句子，输出4-20个所有你推荐的值得用户学习掌握的单词，其中不包含单词缩写。每个单词对象要求包含“eng”，“chn”两个键值对，分别对应原英文单词和对应的中文释义。
+    EXAMPLE JSON OUTPUT:
+    {
+        "Reply": "这很有意思",
+        "Vocabulary:" [
+            {
+                "eng": "interesting",
+                "chn": "有趣的"
+            },
+            {
+                "eng": "fun",
+                "chn": "有趣"
+            }
+        ]
+    }
+    """
+}
+prompt_exam = {
+    "role": "system",
+    "content": """    
+    你是一位英语考试助手，负责根据用户提供的单词列表生成一份英语考试题目。
+    你的回答要求如下：
+    1.用包含题目总数Total和Exam链表的json文件返回你的回答。
+    2.Exam链表中每一个数组对应一道题目，输出你生成的考试题目。
+    3.每个题目数组，包含三个键值对，分别为题目类型，题干和题目参考答案，对应键名字为"type","question","answer"。
+    3.考试类型包含单词挖空拼写（即去除单词中间的若干字母）、中文释义翻译，完形填空，首字母填空。题目数量在10-15道之间。
+    4.题目应适合CET4级别的英语学习者，难度适中。
+    5.返回的json按照题目类型排序输出题目。
+    EXAMPLE JSON OUTPUT:
+    {
+        “Total": 2,
+        "Exam": [
+            {
+                "type": "单词挖空拼写",
+                "question": "I love playing g__es.",
+                "answer": "games"
+            },
+            {
+                "type": "中文释义翻译",
+                "question": "What is the meaning of 'interesting'?",
+                "answer": "有趣的"
+            }
+        ]
+    }
+    """
 }
 
 def chatbot(query):
@@ -106,34 +160,14 @@ def concludebot():
     response_json=json.loads(response.choices[0].message.content)  # Ensure the response is in JSON format
     assess = response_json["Assess"]  # Extract the assessment from the response
     vocabulary = response_json["Vocabulary"]  # Extract the vocabulary list from the response
-    for word in vocabulary:
-        print(f"单词: {word['eng']}, 释义: {word['chn']}")
-    return assess
+    
+    return assess,vocabulary
 
 def translatebot(query):
-    messages = [{"role": "system", "content": """
-                你是一位翻译助手，负责将用户输入的英文句子翻译成中文。
-                你的回答要求如下：
-                1.用包含Reply键值对和Vocabulary的链表的json文件返回你的回答。
-                2.Reply键直接对应一条字符串，输出你给出的翻译结果。
-                3.尽可能的使用CET4级别的语句去翻译用户的句子。
-                4.Vocabulary数组，基于用户输入的句子，输出4-20个所有你推荐的值得用户学习掌握的单词，其中不包含单词缩写。每个单词对象要求包含“eng”，“chn”两个键值对，分别对应原英文单词和对应的中文释义。
-                EXAMPLE JSON OUTPUT:
-                {
-                    "Reply": "这很有意思",
-                    "Vocabulary:" [
-                        {
-                            "eng": "interesting",
-                            "chn": "有趣的"
-                        },
-                        {
-                            "eng": "fun",
-                            "chn": "有趣"
-                        }
-                    ]
-                }
-                """},
-                {"role": "user", "content": query}]
+    messages = [
+        prompt_translate,
+        {"role": "user", "content": query}
+    ]
 
     response = client.chat.completions.create(
         model="deepseek-chat",
@@ -147,20 +181,38 @@ def translatebot(query):
     vocabulary = response_json["Vocabulary"]  # Extract the vocabulary list from the response
     return translation,vocabulary
 
+def exambot(vocabulary):
+    vocabulary_json = json.dumps(vocabulary, ensure_ascii=False, sort_keys=True, indent=2)
+    messages = [
+        prompt_exam,
+        {"role": "user", "content": vocabulary_json}
+    ]
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=messages,
+        response_format={
+            'type': 'json_object'
+        }
+    )
+    response_json = json.loads(response.choices[0].message.content)  # Ensure the response is in JSON format
+    exam = response_json["Exam"]  # Extract the exam list from the response
+    questions = [item["question"] for item in exam]
+    return questions
 
 if __name__ == "__main__":
-    print("""
-        Welcome to the English Helper!\n
-        Please choose an option as argument:\n
-        1. Translate English to Chinese\n
-        2. Chat with the English Helper\n
-        """)
+    """
+    Welcome to the English Helper!
+    Please choose an option as argument:
+    1. Translate English to Chinese
+    2. Chat with the English Helper
+    If no argument is provided, the program will exit.
+    """
     if len(sys.argv) > 1 and sys.argv[1] == "1":
         query = input("You: ")
         translation,vocabulary = translatebot(query=query)
         print(f"Translation: {translation}")
         for word in vocabulary:
-            print(f"Word: {word['eng']}, Meaning: {word['chn']}")
+            print(f"单词: {word['eng']}, 释义: {word['chn']}")
     if len(sys.argv) > 1 and sys.argv[1] == "2":
         while True:
             query = input("You: ")
@@ -168,5 +220,17 @@ if __name__ == "__main__":
             print(answer)
             if ENDTAG:
                 break
-        print(concludebot())
+        assess,vocabulary=concludebot()
+        print(assess)
+        for word in vocabulary:
+            print(f"单词: {word['eng']}, 释义: {word['chn']}")
+
+    if len(sys.argv) > 1 and sys.argv[1] == "3":
+        f = open("vocabulary.json", "r", encoding="utf-8")
+        vocabulary = json.load(f)
+        question=exambot(vocabulary)
+        print("Generated Exam Questions:")
+        for i, q in enumerate(question, 1):
+            print(f"{i}. {q}")
+
 sys.exit(0)
