@@ -1,42 +1,54 @@
 [
-    {
-        "english": "apple",
-        "chinese": "苹果"
-    },
-    {
-        "english": "book",
-        "chinese": "书"
-    },
-    {
-        "english": "cat",
-        "chinese": "猫"
-    },
-    {
-        "english": "dog",
-        "chinese": "狗"
-    },
-    {
-        "english": "water",
-        "chinese": "水"
-    },
-    {
-        "english": "sun",
-        "chinese": "太阳"
-    },
-    {
-        "english": "tree",
-        "chinese": "树"
-    },
-    {
-        "english": "car",
-        "chinese": "汽车"
-    },
-    {
-        "english": "house",
-        "chinese": "房子"
-    },
-    {
-        "english": "flower",
-        "chinese": "花"
-    }
+  {
+    "eng": "Exploring",
+    "chn": "探索"
+  },
+  {
+    "eng": "outer space",
+    "chn": "外太空"
+  },
+  {
+    "eng": "spacecraft",
+    "chn": "宇宙飞船"
+  },
+  {
+    "eng": "astronaut",
+    "chn": "宇航员"
+  },
+  {
+    "eng": "spacewalk",
+    "chn": "太空行走"
+  },
+  {
+    "eng": "aerospace",
+    "chn": "航空航天"
+  },
+  {
+    "eng": "innovative",
+    "chn": "创新的"
+  },
+  {
+    "eng": "infrastructure",
+    "chn": "基础设施"
+  },
+  {
+    "eng": "completed",
+    "chn": "完成"
+  },
+  {
+    "eng": "civilization",
+    "chn": "文明"
+  },
+  {
+    "eng": "journey",
+    "chn": "旅程"
+  },
+  {
+    "eng": "steadier",
+    "chn": "更稳健的"
+  },
+  {
+    "eng": "further-reaching",
+    "chn": "更深远的"
+  }
 ]

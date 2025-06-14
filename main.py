@@ -3,7 +3,7 @@ import json
 import sys
 
 # 请替换成你的OpenAI API Key
-client = OpenAI(api_key="sk-c4d67b703ba447ed9bd593d71562103c", base_url="https://api.deepseek.com")
+client = OpenAI(api_key="", base_url="https://api.deepseek.com")
 
 
 
