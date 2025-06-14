@@ -3,7 +3,7 @@ import gradio as gr
 import json
 
 # 请替换成你的OpenAI API Key
-client = OpenAI(api_key="sk-0ddfe290dce5491a883cb591be677303", base_url="https://api.deepseek.com")
+client = OpenAI(api_key="", base_url="https://api.deepseek.com")
 
 # 系统提示词
 chat_prompt = """
